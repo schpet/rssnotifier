@@ -47,18 +47,19 @@ class MainPage(webapp.RequestHandler):
                 "yaletown",
                 "granville",
                 "dunbar",
+                "coquitlam",
                 ]
 
         posts = []
 
-        im = ""
         feed_url = "http://vancouver.en.craigslist.ca/search/apa/van?query=&srchType=A&minAsk=800&maxAsk=1500&bedrooms=2&format=rss" 
         feed = feedparser.parse(feed_url)
 
         for entry in feed.entries:
             post = Post(url = entry.link, title = entry.title, shithole = False)
-            description = entry.description.lower()
+            description = entry.title.lower() + ' ' + entry.description.lower()
             
+            # get rid of anything past 32nd
             street = re.search(r"(\d+)(?:st|nd|rd|th)", description)
 
             if street :
@@ -66,26 +67,21 @@ class MainPage(webapp.RequestHandler):
                 if street_num > 32 :
                     post.shithole = True
 
-            for baddy in illegal_words:
-
-                shithole = post.title.find(baddy)
-                if (shithole != -1):
-                    post.shithole = True
-                    break
-
-
-                shithole = description.find(baddy)
+            for bad in illegal_words:
+                shithole = description.find(bad)
                 if (shithole != -1):
                     post.shithole = True
 
 
             posts.append(post)
-            if not post.shithole:
-                im = im + post.title + '\n' + post.url + '\n\n'
                 
-        logging.error('mk')
         if self.request.get('im') == 'true':
-            logging.error('oh goody')
+            # create the msg
+            im = ""
+            for post in posts:
+                if not post.shithole:
+                    im = im + post.title + '\n' + post.url + '\n\n'
+
             user_address = 'schpet@gmail.com'
             chat_message_sent = False
 
@@ -94,7 +90,6 @@ class MainPage(webapp.RequestHandler):
                 chat_message_sent = (status_code == xmpp.NO_ERROR)
                 logging.error(`chat_message_sent` + ' ? ' + im)
             else:
-                
                 xmpp.send_invite(user_address)
                 logging.error('no instant message for you')
 
