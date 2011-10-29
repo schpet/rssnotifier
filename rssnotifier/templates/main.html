@@ -2,25 +2,74 @@
     <head>
         <title>Apartments</title>
         <style type="text/css">
+            body {
+                font-family: "Helvetica", "Arial", sans-serif;
+            }
+
+            .main {
+                margin: 1em;
+            }
+
+            .listings ul {
+                padding: 0;
+            }
+
+            .listings li {
+                margin: 1em 0;
+                list-style: none;
+            }
+
+            .listings .time {
+                width: 200px;
+                font-size: 0.8em;
+                color: gray;
+            }
+            .listings .link {
+                width: 600px;
+            }
+
             .hide,
-            .hide a { color: #ccc }
+            .hide a { color: #aaa }
 
         </style>
     </head>
     <body>
-	<h1>Apartments</h1>
-	<a href="{{ feed }}">source</a>
-        <ul>
-        {% for post in posts %}
-            <li {% if post.shithole %}class="hide"{% endif %}>
-                <a href="{{ post.url }}">
-                    {{ post.title }}
-                </a>
-            </li>
-        {% endfor %} 
-        </ul>
+        <div class="main">
+            <h1>Apartments</h1>
+            <p>Updated {{ scrape_time|timesince }} ago</p>
+            <div class="listings">
+                <h2>The Good</h2>
+                <ul>
+                {% for post in good_posts %}
+                    <li> 
+                        <div class="link">
+                            <a href="{{ post.url }}">
+                                {{ post.title }}
+                            </a>
+                        </div>
+                        <div class="time">
+                            Posted {{ post.datetime|timesince }} ago
+                        </div>
+                    </li>
+                {% endfor %} 
+                </ul>
 
-        
-
+                <h2>The Bad</h2>
+                <ul class="hide">
+                {% for post in bad_posts %}
+                    <li> 
+                        <div class="link">
+                            <a href="{{ post.url }}">
+                                {{ post.title }}
+                            </a>
+                        </div>
+                        <div class="time">
+                            Posted {{ post.datetime|timesince }} ago
+                        </div>
+                    </li>
+                {% endfor %} 
+                </ul>
+            </div>
+        </div>
     </body>
 </html>
