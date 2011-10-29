@@ -12,6 +12,13 @@ indexes:
 
 - kind: Post
   properties:
+  - name: branch
+  - name: shithole
+  - name: datetime
+    direction: desc
+
+- kind: Post
+  properties:
   - name: shithole
   - name: datetime
 

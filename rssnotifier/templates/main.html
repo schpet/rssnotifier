@@ -8,6 +8,7 @@
 
             .main {
                 margin: 1em;
+                width: 500px;
             }
 
             .listings ul {
@@ -20,12 +21,8 @@
             }
 
             .listings .time {
-                width: 200px;
                 font-size: 0.8em;
                 color: gray;
-            }
-            .listings .link {
-                width: 600px;
             }
 
             .hide,
@@ -54,7 +51,7 @@
                             </a>
                         </div>
                         <div class="time">
-                            Posted {{ post.datetime|timesince }} ago
+                            {{ post.hood }} - {{ post.datetime|timesince }} ago
                         </div>
                     </li>
                 {% endfor %} 
@@ -70,7 +67,7 @@
                             </a>
                         </div>
                         <div class="time">
-                            Posted {{ post.datetime|timesince }} ago
+                            Posted in {{ post.hood }} {{ post.datetime|timesince }} ago
                         </div>
                     </li>
                 {% endfor %} 
