@@ -17,17 +17,20 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api import xmpp
 
 user_address = '' # put your email here to receive instant messages
+branch = 'master'
 
 class Post(db.Model):
     url = db.StringProperty(required=True)
     title = db.StringProperty(required=True)
     shithole = db.BooleanProperty()
+    branch = db.StringProperty(default=branch)
     datetime = db.DateTimeProperty()
 
 class Scrape(db.Model):
     start = db.DateTimeProperty()
     finish = db.DateTimeProperty()
     feed = db.StringProperty(required=True)
+    branch = db.StringProperty(default=branch)
 
 class ScrapeRequest(webapp.RequestHandler):
     def scrape(self):
@@ -147,14 +150,16 @@ class MainPage(webapp.RequestHandler):
         good_posts = db.GqlQuery("SELECT * "
                                 "FROM Post "
                                 "WHERE shithole = :1 "
+                                "AND branch = :2 "
                                 "ORDER BY datetime DESC LIMIT 20",
-                                False
+                                False, branch,
                                 )
         bad_posts = db.GqlQuery("SELECT * "
                                 "FROM Post "
                                 "WHERE shithole = :1 "
+                                "AND branch = :2 "
                                 "ORDER BY datetime DESC LIMIT 20",
-                                True
+                                True, branch,
                                 )
 
 
