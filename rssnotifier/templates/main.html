@@ -36,7 +36,13 @@
     <body>
         <div class="main">
             <h1>Apartments</h1>
-            <p>Updated {{ scrape_time|timesince }} ago</p>
+            <p>
+              {% if scrape_time %}
+              Updated {{ scrape_time|timesince }} ago. 
+              {% endif %}
+              <a href="/scrape">Update now</a>
+                
+            </p>
             <div class="listings">
                 <h2>The Good</h2>
                 <ul>

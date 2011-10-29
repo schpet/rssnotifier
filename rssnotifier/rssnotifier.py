@@ -136,7 +136,7 @@ class ScrapeRequest(webapp.RequestHandler):
                 message = 'can\'t scrape for %d seconds.' % wait_seconds
         else:
             self.scrape()
-            message = 'initial complete.'
+            message = 'initial scrape complete.'
         
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.out.write(message)
