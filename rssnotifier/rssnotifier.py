@@ -7,7 +7,7 @@ from google.appengine.dist import use_library
 use_library('django', '1.2')
 
 from dateutil.parser import parse
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from google.appengine.ext import webapp
 from google.appengine.ext import db
@@ -16,16 +16,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from google.appengine.api import xmpp
 
-"""
-TODO
-
-Split up the scraping and displaying
-
-Scrape and persist every 15 minutes
-check etags, etc?
-
-View: pull latest 50 posts or something
-"""
+user_address = '' # put your email here to receive instant messages
 
 class Post(db.Model):
     url = db.StringProperty(required=True)
@@ -39,7 +30,7 @@ class Scrape(db.Model):
     feed = db.StringProperty(required=True)
 
 class ScrapeRequest(webapp.RequestHandler):
-    def get(self):
+    def scrape(self):
         feed_url = "http://vancouver.en.craigslist.ca/search/apa/van?query=&srchType=A&minAsk=800&maxAsk=1500&bedrooms=2&format=rss" 
         scrape = Scrape(feed = feed_url, start = datetime.now())
 
@@ -112,8 +103,7 @@ class ScrapeRequest(webapp.RequestHandler):
                 # todo batch put
                 post.put()
 
-        if len(im) > 0:
-            user_address = 'schpet@gmail.com'
+        if len(im) > 0 and len(user_address) > 0:
             chat_message_sent = False
 
             if xmpp.get_presence(user_address):
@@ -125,8 +115,31 @@ class ScrapeRequest(webapp.RequestHandler):
                 logging.error('no instant message for you')
 
         scrape.finish = datetime.now()
-
         scrape.put()
+
+    def get(self):
+        scrape_time = None
+        message = None
+        scrape = Scrape.all().order("-finish").fetch(1)
+
+        if scrape:
+            scrape_time = scrape[0].start
+            now = datetime.now()
+            time_since_scrape = (now - scrape_time)
+
+
+            if time_since_scrape > timedelta(minutes = 1):
+                self.scrape()
+                message = 'scrape complete.' 
+            else:
+                wait_seconds = 60 - time_since_scrape.seconds
+                message = 'can\'t scrape for %d seconds.' % wait_seconds
+        else:
+            self.scrape()
+            message = 'initial complete.'
+        
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.out.write(message)
 
 
 class MainPage(webapp.RequestHandler):
@@ -144,13 +157,17 @@ class MainPage(webapp.RequestHandler):
                                 True
                                 )
 
+
         scrape = Scrape.all().order("-finish").fetch(1)
-        
+        scrape_time = None
+        if scrape:
+            scrape_time = scrape[0].finish
+
 
         template_values = {
                 "good_posts": good_posts,
                 "bad_posts": bad_posts,
-                "scrape_time": scrape[0].finish,
+                "scrape_time": scrape_time,
                 }
 
         path = os.path.join(os.path.dirname(__file__), 'templates/main.html')
